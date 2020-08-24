@@ -1,7 +1,10 @@
 class Individual:
-    def __init__(self, id, is_robot=False):
+    _ind_id = 0
+
+    def __init__(self, is_robot=False):
         self._is_robot = is_robot
-        self._id = id
+        self._id = Individual._ind_id
+        Individual._ind_id += 1
         self._position = None
         self._velocity = None
 
@@ -17,8 +20,12 @@ class Individual:
     def is_robot(self):
         return self._is_robot
 
-    def interact(self):
+    def run(self, simu):
+        self.interact(simu)
+        self.move(simu)
+
+    def interact(self, simu):
         assert False, 'You need to implement this function in a subclass'
 
-    def move(self):
+    def move(self, simu):
         assert False, 'You need to implement this function in a subclass'

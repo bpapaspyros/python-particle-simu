@@ -7,13 +7,14 @@ import datetime
 
 
 class Simulation:
-    def __init__(self, num_iterations, args={'stats_enabled': False}):
-        self._agent_list = []
+    def __init__(self, timestep, num_iterations, args={'stats_enabled': False}):
+        self._individual_list = []
         self._descriptor_list = []
         self._stat_list = []
         self._num_iterations = num_iterations
         self._current_iteration = 0
         self._args = args
+        self._timestep = timestep
 
         if 'stats_enabled' in self._args.keys() and self._args['stats_enabled']:
             hostname = socket.gethostname()
@@ -25,8 +26,8 @@ class Simulation:
     def get_simu(self):
         return self
 
-    def add_agent(self, agent):
-        self._agent_list.append(agent)
+    def add_individual(self, individual):
+        self._individual_list.append(individual)
         return self
 
     def add_descriptor(self, desc):
@@ -37,11 +38,11 @@ class Simulation:
         self._stat_list.append(stat)
         return self
 
-    def get_num_agents(self):
-        return len(self._agent_list)
+    def get_num_individuals(self):
+        return len(self._individual_list)
 
-    def get_agents(self):
-        return self._agent_list
+    def get_individuals(self):
+        return self._individual_list
 
     def get_num_iterations(self):
         return self._num_iterations
@@ -58,6 +59,9 @@ class Simulation:
     def get_stats(self):
         return self._stat_list
 
+    def get_timestep(self):
+        return self._timestep
+
     def _update(self):
         if 'stats_enabled' in self._args.keys() and self._args['stats_enabled']:
             for obj in self._stat_list:
@@ -66,9 +70,20 @@ class Simulation:
             for obj in self._descriptor_list:
                 obj(self)
 
+    def _dump(self):
+        if 'stats_enabled' in self._args.keys() and self._args['stats_enabled']:
+            for obj in self._stat_list:
+                obj.save()
+
+            for obj in self._descriptor_list:
+                obj.save()
+
     def spin_once(self):
-        for a in self._agent_list:
-            a.run()
+        for a in self._individual_list:
+            a.run(self)
+
+        if 'stats_enabled' in self._args.keys() and self._args['stats_enabled']:
+            self._update()
 
         if self._current_iteration > self._num_iterations:
             warnings.warn(
@@ -79,3 +94,6 @@ class Simulation:
     def spin(self):
         for _ in tqdm.tqdm(range(self._num_iterations)):
             self.spin_once()
+
+        if 'stats_enabled' in self._args.keys() and self._args['stats_enabled']:
+            self._dump()
