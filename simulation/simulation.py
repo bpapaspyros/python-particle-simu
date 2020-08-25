@@ -5,9 +5,10 @@ import tqdm
 import socket
 import datetime
 
+from random import shuffle
 
 class Simulation:
-    def __init__(self, timestep, num_iterations, args={'stats_enabled': False}):
+    def __init__(self, timestep, num_iterations, args={'stats_enabled': False, 'simu_dir_gen': True}):
         self._individual_list = []
         self._descriptor_list = []
         self._stat_list = []
@@ -15,8 +16,9 @@ class Simulation:
         self._current_iteration = 0
         self._args = args
         self._timestep = timestep
+        self._dirname = ''
 
-        if 'stats_enabled' in self._args.keys() and self._args['stats_enabled']:
+        if 'simu_dir_gen' in self._args.keys() and self._args['simu_dir_gen']:
             hostname = socket.gethostname()
             timestamp = datetime.datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
             self._dirname = hostname + '_' + timestamp
@@ -79,9 +81,11 @@ class Simulation:
                 obj.save()
 
     def spin_once(self):
-        for a in self._individual_list:
-            a.run(self)
-
+        ind_ids = list(range(len(self._individual_list)))
+        shuffle(ind_ids)
+        for idx in ind_ids:
+            self._individual_list[idx].run(self)
+        
         if 'stats_enabled' in self._args.keys() and self._args['stats_enabled']:
             self._update()
 
